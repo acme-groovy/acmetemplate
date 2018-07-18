@@ -9,7 +9,11 @@ import org.codehaus.groovy.runtime.IOGroovyMethods;
 
 //@groovy.transform.CompileStatic
 public class AcmeTemplateEngine extends TemplateEngine {
-    String mode = "&";
+
+    final static String MODE_ALL="&";
+    final static String MODE_JSP="%";
+    final static String MODE_SH="$";
+    String mode = MODE_ALL;
 
 
     AcmeTemplateEngine setMode(String mode){

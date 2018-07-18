@@ -24,11 +24,7 @@ import junit.framework.TestCase;
 class AcmeTemplateTest extends GroovyTestCase {
 	int runCount = 5000;
 	
-	public void test1(){
-		def tpl = new ReaderTemplate(" myParm1 = <%=myParm1%>; myParm2 = <%=myParm2%>")
-		def s = tpl.make( out: new StringWriter(), myParm1: 111, myParm2:'sss' ).toString()
-		assert s==" myParm1 = 111; myParm2 = sss";
-	}
+
 	/*
 	public void testLoadSimpleAll(){
 		for(int i=0; i<runCount; i++) {

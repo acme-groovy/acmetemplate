@@ -1,99 +1,51 @@
 package groovyx.acme.text;
 
-import java.util.Map;
-import java.util.LinkedHashMap;
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.IOException;
-import java.io.FileInputStream;
-import java.io.BufferedInputStream;
-import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
+import groovy.lang.Writable;
+import groovy.text.Template;
 import org.codehaus.groovy.runtime.MethodClosure;
 
+import java.io.IOException;
 import java.nio.CharBuffer;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-/**
- * String-based groovy-like template that supports <% %> tags for code and <%= xxx %> as value injection
- * usage:
- * def tpl = new ReaderTemplate(" myParm1 = <%=myParm1%>; myParm2 = <%=myParm2%>")
- * tpl.make( out: new File("out1").newWriter(), myParm1: 111, myParm2:'sss' )
- * tpl.make( out: new File("out2").newWriter(), myParm1: 222, myParm2:'ddd' )
- */
 @groovy.transform.CompileStatic
-public class ReaderTemplate {
-    //protected static final String className = FileTemplate.class.getName();
-    
+public class AcmeTemplate implements Template {
+
     CharBuffer template;
-    String scriptText;
-    //String encoding = "UTF-8";
-    
-    public ReaderTemplate(CharSequence cc)throws IOException {
-        this.template = CharBuffer.wrap(cc);
-        scriptText = this.parse();
-    }
-    
-    public ReaderTemplate(Reader r)throws IOException {
-        this( r.getText() );
-    }
-    
-    public String toString() {
-        return this.getClass().getName() + "[[[script:\n" + scriptText + "]]]";
-    }
-    
-    public Appendable make( Map binding )throws IOException {
-        Map bindMap = new LinkedHashMap();
-        bindMap.putAll( binding );
+    Class<Script> scriptClass=null;
 
-        Appendable out  = bindMap.get("out");
-        if(out==null)out=new StringWriter(this.template.length()*1.33);
-        if ( !(out instanceof java.io.Writer) && !(out instanceof java.io.PrintStream) ){ throw new RuntimeException("Binding parameter `out` should be instance of java.io.Writer or java.io.PrintStream"); }
-        bindMap.put("out", out);
-        bindMap.put("template", template);
-        bindMap.put("write", new MethodClosure(this,"write")); //this.&write;
-        
-        Script script = new GroovyShell().parse( scriptText , "ReaderTemplate_" + Long.toHexString(template.hashCode()) + ".groovy");
-        script.setBinding( new Binding(bindMap) );
-        try {
-            script.run();
-        }catch(Throwable e){
-            //println "Failed script:\n$scriptText";
-            throw e;
-        }
-        return out;
-    }
-    
-    /**used in internal composed script to write output*/
-    public void write ( Appendable out, Object data ) throws IOException {
-        write(out,data,-1);
-    }
-    
-    public void write( Appendable out, Object data, int chars /*-1: all*/ )throws IOException{
-        if (data==null || chars==0)return;
-        if(data instanceof CharSequence){
-            CharSequence cs = (CharSequence)data;
-            if(chars==-1)chars=cs.length()
-            if(chars==0)return;
-            out.append(cs, 0, chars);
-            if(cs instanceof CharBuffer){
-                //if it's a charbuffer move current position
-                cs.position( cs.position()+chars );
-            }
-        }else{
-            this.write(out, data.toString(), chars);
-        }
+
+    String mode;
+
+
+
+
+    public AcmeTemplate(CharSequence templateText, final String mode){
+        template= CharBuffer.wrap(templateText);
+        this.mode=mode;
     }
 
-    private String parse()throws IOException {
+    private Script getScript() throws IllegalAccessException, InstantiationException, IOException {
+        if(scriptClass==null)
+        {
+            Script script = parse();
+            scriptClass = (Class<Script>) script.getClass();
+            return script;
+        }
+        else return scriptClass.newInstance();
+    }
+
+    private Script parse()throws IOException {
         int state = 0;//0 - `<` - 1 - `%` - 2 -'%' - 3 - `>` - 1
         boolean eqFlag = false;
-        StringBuffer out=new StringBuffer( template.length()*0.75 );
-        char [] cchars = [
-            '<', '%', '%', '>',
-            '$', '{', '}'
-        ] as char[];
+        StringBuffer out=new StringBuffer( (int)(template.length()*0.75) );
+        char [] cchars = {
+                '<', '%', '%', '>',
+                '$', '{', '}' };
 
         int index = 0;
         int start = 0; //start of the last block script or default
@@ -102,7 +54,8 @@ public class ReaderTemplate {
             char b=template.get(index);
             switch(state){
                 case 0: //default
-                    if( b==cchars[0] ){ state=1; }
+                    if( b==cchars[0] && (mode=="%" || mode=="&") ){ state=1; }
+                    else if (b==cchars[4]&& (mode=="$" || mode=="&")) { state=5; }
                     // else if( b==cchars[4] ){ state=5; } //comment to disable support of ${} expressions
                     break;
                 case 1: //got `<` from default waiting for `%`
@@ -113,12 +66,12 @@ public class ReaderTemplate {
                             out.append("\nwrite(out, template, "+(index-1-start)+");\n");
                         }
                         start=index+1;
-                    } else { 
+                    } else {
                         state=0; //fall back state
                     }
                     break;
                 case 2: //got `%` after `<` : sctipt started from the next byte
-                //println "index=$index state=$state b=`${(char)b}`"
+                    //println "index=$index state=$state b=`${(char)b}`"
                     if( b==cchars[state] ) { state++; }
                     else {
                         if( start==index && b==(char)'=' ){ out.append("\nwrite(out, "); eqFlag=true; }
@@ -179,6 +132,48 @@ public class ReaderTemplate {
         out.append("\nout.flush();");
         out.append("\n/*autogenerated script end*/");
         template.position(0);
-        return out.toString();
+        String scriptText = out.toString();
+        //println scriptText
+        Script script1 = new GroovyShell().parse( scriptText , "AcmeTemplate_" + Long.toHexString(template.hashCode()) + ".groovy");
+        return script1;
+    }
+
+    @Override
+    public Writable make() {
+        return make(new HashMap());
+    }
+
+    @Override
+    public Writable make(Map map) {
+        return null;
+    }
+
+    public void write ( Appendable out, Object data ) throws IOException {
+        write(out,data,-1);
+    }
+
+    public void write( Appendable out, Object data, int chars /*-1: all*/ )throws IOException{
+        if (data==null || chars==0)return;
+        if(data instanceof CharSequence){
+            CharSequence cs = (CharSequence)data;
+            if(chars==-1)chars=cs.length();
+            if(chars==0)return;
+            out.append(cs, 0, chars);
+            if(cs instanceof CharBuffer){
+                //if it's a charbuffer move current position
+                ((CharBuffer)cs).position( ((CharBuffer)cs).position()+chars );
+            }
+        }else{
+            this.write(out, data.toString(), chars);
+        }
+    }
+
+    public Writable make1(Map map) throws IllegalAccessException, IOException, InstantiationException {
+        Map bindMap = new LinkedHashMap();
+        bindMap.putAll( map );
+        bindMap.put("template", template);
+        bindMap.put("write", new MethodClosure(this,"write")); //this.&write;
+        Writable writable = new AcmeTemplateWritable(getScript(),bindMap);
+        return writable;
     }
 }
