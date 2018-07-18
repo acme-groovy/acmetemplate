@@ -22,24 +22,75 @@ import junit.framework.TestResult;
 import junit.framework.TestCase;
 
 class AcmeTemplateTest extends GroovyTestCase {
+	int runCount = 5000;
 	
 	public void test1(){
 		def tpl = new ReaderTemplate(" myParm1 = <%=myParm1%>; myParm2 = <%=myParm2%>")
 		def s = tpl.make( out: new StringWriter(), myParm1: 111, myParm2:'sss' ).toString()
 		assert s==" myParm1 = 111; myParm2 = sss";
 	}
-
-	public void test2(){
-		def te = new groovy.text.SimpleTemplateEngine();
-		def t = te.createTemplate("myParm1 = <%=myParm1%>; myParm2 = <%=myParm2%>");
-		def wr = t.make(myParm1: 111, myParm2:'sss').toString();
-		assert wr=="myParm1 = 111; myParm2 = sss";
+	/*
+	public void testLoadSimpleAll(){
+		for(int i=0; i<runCount; i++) {
+			def te = new groovy.text.SimpleTemplateEngine();
+			def t = te.createTemplate("myParm1 = <%=myParm1%>; myParm2 = <%=myParm2%>");
+			def wr = t.make(myParm1: i, myParm2: 'sss').toString();
+		}
 	}
 
-	public void test3(){
+	public void testLoadSimpleEngine(){
+		def te = new groovy.text.SimpleTemplateEngine();
+		for(int i=0; i<runCount; i++) {
+			def t = te.createTemplate("myParm1 = <%=myParm1%>; myParm2 = <%=myParm2%>");
+			def wr = t.make(myParm1: i, myParm2: 'sss').toString();
+		}
+	}
+
+	public void testLoadSimpleTemplate(){
+		def te = new groovy.text.SimpleTemplateEngine();
+		def t = te.createTemplate("myParm1 = <%=myParm1%>; myParm2 = <%=myParm2%>");
+		for(int i=0; i<runCount; i++) {
+			def wr = t.make(myParm1: i, myParm2: 'sss').toString();
+		}
+	}
+	*/
+	public void testLoadAcmeAll(){
+		for (int i=0; i<runCount; i++) {
+			def te = new AcmeTemplateEngine();
+			def t = te.createTemplate("myParm1 = <%=myParm1%>; myParm2 = <%=myParm2%>");
+			def wr = t.make1(myParm1: i, myParm2: 'sss').toString()
+		}
+	}
+	/*
+	public void testLoadAcmeEngine(){
+		def te = new AcmeTemplateEngine();
+		for (int i=0; i<runCount; i++) {
+			def t = te.createTemplate("myParm1 = <%=myParm1%>; myParm2 = <%=myParm2%>");
+			def wr = t.make1(myParm1: i, myParm2: 'sss').toString()
+		}
+	}
+
+	public void testLoadAcmeTemplate(){
 		def te = new AcmeTemplateEngine();
 		def t = te.createTemplate("myParm1 = <%=myParm1%>; myParm2 = <%=myParm2%>");
-		def wr = t.make1(myParm1: 111, myParm2:'sss').toString()
-		println wr;
+		for (int i=0; i<runCount; i++) {
+			def wr = t.make1(myParm1: i, myParm2: 'sss').toString()
+		}
+	}
+	*/
+
+	public void testAcmeModeSH(){
+		def te = new AcmeTemplateEngine().setMode(AcmeTemplate.MODE_SH);
+		def t = te.createTemplate('myParm1 = <%=myParm1%>; myParm2 = ${myParm2}');
+		def wr = t.make1(myParm1: 111, myParm2: 'sss').toString()
+		assert wr=='myParm1 = <%=myParm1%>; myParm2 = sss'
+	}
+
+
+	public void testAcmeModeJSP(){
+		def te = new AcmeTemplateEngine().setMode(AcmeTemplate.MODE_JSP);
+		def t = te.createTemplate('myParm1 = <%=myParm1%>; myParm2 = ${myParm2}');
+		def wr = t.make1(myParm1: 111, myParm2: 'sss').toString()
+		assert wr=='myParm1 = 111; myParm2 = ${myParm2}'
 	}
 }
