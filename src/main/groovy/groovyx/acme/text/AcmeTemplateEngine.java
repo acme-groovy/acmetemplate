@@ -176,10 +176,6 @@ public class AcmeTemplateEngine extends TemplateEngine {
             return make(new HashMap());
         }
 
-        @Override
-        public Writable make(Map map) {
-            return null;
-        }
 
         public void write(Appendable out, Object data) throws IOException {
             write(out, data, -1);
@@ -201,12 +197,22 @@ public class AcmeTemplateEngine extends TemplateEngine {
             }
         }
 
-        public Writable make1(Map map) throws IllegalAccessException, IOException, InstantiationException {
+        @Override
+        public Writable make(Map map) {
             Map bindMap = new LinkedHashMap();
             bindMap.putAll(map);
             bindMap.put("template", template);
             bindMap.put("write", new MethodClosure(this, "write")); //this.&write;
-            Writable writable = new AcmeTemplateWritable(getScript(), bindMap);
+            Writable writable = null;
+            try {
+                writable = new AcmeTemplateWritable(getScript(), bindMap);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             return writable;
         }
     }

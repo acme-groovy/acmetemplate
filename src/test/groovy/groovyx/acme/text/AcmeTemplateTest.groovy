@@ -42,7 +42,7 @@ class AcmeTemplateTest extends GroovyTestCase {
 		def te = new AcmeTemplateEngine();
 		for (int i=0; i<runCount; i++) {
 			def t = te.createTemplate("myParm1 = <%=myParm1%>; myParm2 = <%=myParm2%>");
-			def wr = t.make1(myParm1: i, myParm2: 'sss').toString()
+			def wr = t.make(myParm1: i, myParm2: 'sss').toString()
 		}
 	}
 	*/
@@ -52,7 +52,7 @@ class AcmeTemplateTest extends GroovyTestCase {
 	public void testAcmeModeSH(){
 		def te = new AcmeTemplateEngine().setMode(AcmeTemplate.MODE_SH);
 		def t = te.createTemplate('myParm1 = <%=myParm1%>; myParm2 = ${myParm2}');
-		def wr = t.make1(myParm1: 111, myParm2: 'sss').toString()
+		def wr = t.make(myParm1: 111, myParm2: 'sss').toString()
 		assert wr=='myParm1 = <%=myParm1%>; myParm2 = sss'
 	}
 
@@ -60,22 +60,44 @@ class AcmeTemplateTest extends GroovyTestCase {
 	public void testAcmeModeJSP(){
 		def te = new AcmeTemplateEngine().setMode(AcmeTemplate.MODE_JSP);
 		def t = te.createTemplate('myParm1 = <%=myParm1%>; myParm2 = ${myParm2}');
-		def wr = t.make1(myParm1: 111, myParm2: 'sss').toString()
+		def wr = t.make(myParm1: 111, myParm2: 'sss').toString()
 		assert wr=='myParm1 = 111; myParm2 = ${myParm2}'
 	}
 	*/
 
 
+	/*
 	public void testLoadAcmeAllFile() {
-		def te = new AcmeTemplateEngine();
-		def t = te.createTemplate(new File("C:\\Users\\madch\\work\\projects\\acmetemplate\\src\\test\\groovy\\groovyx\\acme\\text\\text.txt"));
-		def wr = t.make1(Par1: 111, Par2: 'sss', Par3: 222, Par4: 'aaa', Par5: 444, Par6: 'ccc').toString()
+		for(int i=0; i<1000; i++) {
+			def te = new AcmeTemplateEngine();
+			def t = te.createTemplate(new File("C:\\Users\\madch\\work\\projects\\acmetemplate\\src\\test\\groovy\\groovyx\\acme\\text\\small_text.txt"));
+			def wr = t.make(Par1: 111, Par2: 'sss', Par3: 222, Par4: 'aaa', Par5: 444, Par6: 'ccc').toString()
+		}
 	}
 
 	public void testLoadSimpleAllFile() {
+		for(int i=0; i<1000; i++) {
+			def te = new groovy.text.SimpleTemplateEngine();
+			def t = te.createTemplate(new File("C:\\Users\\madch\\work\\projects\\acmetemplate\\src\\test\\groovy\\groovyx\\acme\\text\\small_text.txt"));
+			def wr = t.make(Par1: 111, Par2: 'sss', Par3: 222, Par4: 'aaa', Par5: 444, Par6: 'ccc').toString()
+		}
+	}
+	*/
+
+	public void testLoadAcmeEngineFile() {
+		def te = new AcmeTemplateEngine();
+		for(int i=0; i<1000; i++) {
+			def t = te.createTemplate(new File("C:\\Users\\madch\\work\\projects\\acmetemplate\\src\\test\\groovy\\groovyx\\acme\\text\\small_text.txt"));
+			def wr = t.make(Par1: i, Par2: 'sss', Par3: 222, Par4: 'aaa', Par5: 444, Par6: 'ccc').toString()
+		}
+	}
+
+	public void testLoadSimpleEngineFile() {
 		def te = new groovy.text.SimpleTemplateEngine();
-		def t = te.createTemplate(new File("C:\\Users\\madch\\work\\projects\\acmetemplate\\src\\test\\groovy\\groovyx\\acme\\text\\text.txt"));
-		def wr = t.make(Par1: 111, Par2: 'sss', Par3: 222, Par4: 'aaa', Par5: 444, Par6: 'ccc').toString()
+		for(int i=0; i<1000; i++) {
+			def t = te.createTemplate(new File("C:\\Users\\madch\\work\\projects\\acmetemplate\\src\\test\\groovy\\groovyx\\acme\\text\\small_text.txt"));
+			def wr = t.make(Par1: i, Par2: 'sss', Par3: 222, Par4: 'aaa', Par5: 444, Par6: 'ccc').toString()
+		}
 	}
 
 }
