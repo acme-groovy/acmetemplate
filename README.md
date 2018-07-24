@@ -43,7 +43,7 @@ def t = te.createTemplate('myParm1 = <%=myParm1%>; myParm2 = ${myParm2}');
 def wr = t.make(myParm1: 111, myParm2: 'sss').toString()
 assert wr=='myParm1 = <%=myParm1%>; myParm2 = sss'
 ```
-### Parsing from a files
+### Parsing from a file
 ```groovy
 def te = new AcmeTemplateEngine()
 def t = te.createTemplate(new File("filename.txt"))
