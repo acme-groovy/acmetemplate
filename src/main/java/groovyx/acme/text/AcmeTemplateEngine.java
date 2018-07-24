@@ -1,3 +1,22 @@
+/*
+ *  Licensed to the Apache Software Foundation (ASF) under one
+ *  or more contributor license agreements.  See the NOTICE file
+ *  distributed with this work for additional information
+ *  regarding copyright ownership.  The ASF licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied.  See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
+ */
+
 package groovyx.acme.text;
 
 import groovy.lang.GroovyShell;
@@ -16,35 +35,55 @@ import java.util.Map;
 import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
 
-//@groovy.transform.CompileStatic
+/**
+ * Processes template source files substituting variables and expressions into placeholders in a template source text to produce the desired output.
+ * <br>The template engine uses JSP style &lt;% %&gt; script and &lt;%= %&gt; expression syntax or GString style expressions.
+ * <br>Difference from standard groovy.text.TemplateEngine
+ * <br>
+ * <ul>
+ *     <li>template does not need to use screening for characters like '$', '\', '%'</li>
+ *     <li>can parse big templates</li>
+ *     <li>thread safe</li>
+ *     <li>can be chosen the mode of parsing: using JSP like template or GString like template or both</li>
+ * </ul>
+ */
 public class AcmeTemplateEngine extends TemplateEngine {
 
-    final static String MODE_ALL = "&"; /**Use both styles*/
-    final static String MODE_JSP = "%"; /**Use just <%= %>*/
-    final static String MODE_SH = "$"; /**Use just ${}*/
-    String mode = MODE_ALL; /**Current mode. Using both styles by default*/
+    final static String MODE_ALL = "&";
+    final static String MODE_JSP = "%";
+    final static String MODE_SH = "$";
+    String mode = MODE_ALL;
 
     GroovyShell groovyShell = new GroovyShell();
 
-    /**Sets mode of style expressions (<%= %> or ${} or both)*/
+    /**
+     * Sets mode of expressions style: JSP style or GString style or both)
+     */
     AcmeTemplateEngine setMode(String mode) {
         this.mode = mode;
         return this;
     }
 
-    /**Creating template with input string*/
+    /**
+     * Creating template with input string
+     */
     @Override
     public Template createTemplate(String templateText) throws CompilationFailedException, ClassNotFoundException, IOException {
         return new AcmeTemplate(templateText);
     }
 
-    /**Creating template with reader*/
+    /**
+     * Creating template with reader
+     */
     @Override
     public Template createTemplate(Reader reader) throws CompilationFailedException, ClassNotFoundException, IOException {
         return new AcmeTemplate(IOGroovyMethods.getText(reader));
     }
 
 
+    /**
+     * Parses the template and creates a result
+     */
     class AcmeTemplate implements Template {
 
         CharBuffer template;
@@ -56,7 +95,7 @@ public class AcmeTemplateEngine extends TemplateEngine {
             template = CharBuffer.wrap(templateText);
         }
 
-        /**Returns new instance of script*/
+
         private Script getScript() throws IllegalAccessException, InstantiationException, IOException {
             if (scriptClass == null) {
                 Script script = parse();
@@ -66,7 +105,7 @@ public class AcmeTemplateEngine extends TemplateEngine {
         }
 
 
-        /**Parsing template*/
+
         private Script parse() throws IOException {
             int state = 0;//0 - `<` - 1 - `%` - 2 -'%' - 3 - `>` - 1
             boolean eqFlag = false;
@@ -186,7 +225,7 @@ public class AcmeTemplateEngine extends TemplateEngine {
             write(out, data, -1);
         }
 
-        /**Writes a part of a text from template to result*/
+
         public void write(Appendable out, Object data, int chars /*-1: all*/) throws IOException {
             if (data == null || chars == 0) return;
             if (data instanceof CharSequence) {
@@ -203,7 +242,7 @@ public class AcmeTemplateEngine extends TemplateEngine {
             }
         }
 
-        /**Makes a result text with parameters in the map*/
+
         @Override
         public Writable make(Map map) {
             Map bindMap = new LinkedHashMap();

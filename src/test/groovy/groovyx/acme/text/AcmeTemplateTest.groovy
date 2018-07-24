@@ -22,7 +22,7 @@ import junit.framework.TestResult;
 import junit.framework.TestCase;
 
 class AcmeTemplateTest extends GroovyTestCase {
-	int runCount = 5000;
+	int runCount = 50;
 
 
 
@@ -38,7 +38,7 @@ class AcmeTemplateTest extends GroovyTestCase {
 
 
 	public void testAcmeModeSH(){
-		def te = new AcmeTemplateEngine().setMode(MODE_SH);
+		def te = new AcmeTemplateEngine().setMode(AcmeTemplateEngine.MODE_SH);
 		def t = te.createTemplate('myParm1 = <%=myParm1%>; myParm2 = ${myParm2}');
 		def wr = t.make(myParm1: 111, myParm2: 'sss').toString()
 		assert wr=='myParm1 = <%=myParm1%>; myParm2 = sss'
@@ -46,7 +46,7 @@ class AcmeTemplateTest extends GroovyTestCase {
 
 
 	public void testAcmeModeJSP(){
-		def te = new AcmeTemplateEngine().setMode(MODE_JSP);
+		def te = new AcmeTemplateEngine().setMode(AcmeTemplateEngine.MODE_JSP);
 		def t = te.createTemplate('myParm1 = <%=myParm1%>; myParm2 = ${myParm2}');
 		def wr = t.make(myParm1: 111, myParm2: 'sss').toString()
 		assert wr=='myParm1 = 111; myParm2 = ${myParm2}'
@@ -55,26 +55,15 @@ class AcmeTemplateTest extends GroovyTestCase {
 
 
 
-	public void testLoadAcmeAllFile() {
-		for(int i=0; i<1000; i++) {
-			def te = new AcmeTemplateEngine();
-			def t = te.createTemplate(new File("C:\\Users\\madch\\work\\projects\\acmetemplate\\src\\test\\groovy\\groovyx\\acme\\text\\small_text.txt"));
-			def wr = t.make(Par1: 111, Par2: 'sss', Par3: 222, Par4: 'aaa', Par5: 444, Par6: 'ccc').toString()
-		}
-	}
-
-
 	public void testLoadAcmeEngineFile() {
-		sleep(30000)
-		println "Acme\n"
 		def te = new AcmeTemplateEngine();
-		for(int i=0; i<60000; i++) {
+		for(int i=0; i<runCount; i++) {
 			def t = te.createTemplate(new File("C:\\Users\\madch\\work\\projects\\acmetemplate\\src\\test\\groovy\\groovyx\\acme\\text\\small_text.txt"));
 			def wr = t.make(Par1: i, Par2: 'sss', Par3: 222, Par4: 'aaa', Par5: 444, Par6: 'ccc').toString()
 		}
 	}
 
-
+	/*
 	public void testLoadAcmeEngineThreads(){
 		def thread1 = new Thread({
 			def te = new AcmeTemplateEngine().setMode(MODE_SH);
@@ -89,9 +78,8 @@ class AcmeTemplateTest extends GroovyTestCase {
 			assert wr=='myParm1 = 111; myParm2 = ${myParm2}'
 		})
 
-
 	}
-
+	*/
 
 
 }

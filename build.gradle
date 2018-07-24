@@ -7,12 +7,15 @@ plugins {
 	id "maven"
 	id "maven-publish"
 	id "groovy"
-    id "com.jfrog.bintray" version "1.8.0"
+    id "com.jfrog.bintray" version "1.8.4"
 }
+
+
 
 repositories {
     jcenter()
 }
+
 
 //============================================
 group = "acme.groovy"
@@ -55,8 +58,8 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
 }
 
-task groovydocJar(type: Jar, dependsOn: groovydoc) {
-    classifier = "groovydoc"
+task javadocJar(type: Jar, dependsOn: groovydoc) {
+    classifier = "javadoc"
     from groovydoc.destinationDir
 }
 
@@ -65,7 +68,7 @@ publishing {
         MyPublication(MavenPublication) {
             from components.java
             artifact sourcesJar
-            artifact groovydocJar
+            artifact javadocJar
         }
     }
 }
@@ -80,7 +83,7 @@ bintray {
         userOrg  = rootProject.group.tr('.','-')
         licenses = ["Apache-2.0"]
         vcsUrl   = "https://github.com/acme-groovy/acmetemplate"
-		publicDownloadNumbers = true
+        publicDownloadNumbers = true
     }
 }
 
@@ -95,10 +98,10 @@ jar {
 	}
 }
 
-task all(dependsOn: [clean, build, groovydocJar, sourcesJar, bintrayUpload]){
+task all(dependsOn: [clean, build, javadocJar, sourcesJar, bintrayUpload]){
 	build.mustRunAfter clean
-	groovydocJar.mustRunAfter build
-	sourcesJar.mustRunAfter groovydocJar
+	javadocJar.mustRunAfter build
+	sourcesJar.mustRunAfter javadocJar
 	bintrayUpload.mustRunAfter sourcesJar
 }
 

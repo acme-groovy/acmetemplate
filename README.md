@@ -2,6 +2,14 @@
 Processes template source files substituting variables and expressions into placeholders in a template source text to produce the desired output.
 The template engine uses JSP style <% %> script and <%= %> expression syntax or GString style expressions.
 
+##Grab it
+
+```groovy
+@Grab(group='acme.groovy', module='acmetemplate', version='20180723', transitive=false)
+import groovyx.acme.text.AcmeTemplateEngine
+```
+
+
 ## The goal
 Parse big templates without double character screening with a possibility to choose a kind of expressions: JSP style or GString or both of them.
 
@@ -30,7 +38,7 @@ assert wr=='myParm1 = 111; myParm2 = sss'
 ```
 ###Setting a mode of parsing
 ```groovy
-def te = new AcmeTemplateEngine().setMode(MODE_SH);
+def te = new AcmeTemplateEngine().setMode(AcmeTemplateEngine.MODE_SH);
 def t = te.createTemplate('myParm1 = <%=myParm1%>; myParm2 = ${myParm2}');
 def wr = t.make(myParm1: 111, myParm2: 'sss').toString()
 assert wr=='myParm1 = <%=myParm1%>; myParm2 = sss'
