@@ -20,6 +20,7 @@ Parse large templates without double character escaping with a possibility to ch
 - can parse large templates
 - thread safe
 - can be chosen the mode of parsing: using JSP like template or GString like template or both
+- keeps in result the line endings (LF or CRLF) you used in the template
 
 ## Details
 public class AcmeTemplateEngine
