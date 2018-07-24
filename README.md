@@ -3,7 +3,6 @@ Processes template source files substituting variables and expressions into plac
 The template engine uses JSP style <% %> script and <%= %> expression syntax or GString style expressions.
 
 ## Grab it
-
 ```groovy
 @Grab(group='acme.groovy', module='acmetemplate', version='20180723', transitive=false)
 import groovyx.acme.text.AcmeTemplateEngine
