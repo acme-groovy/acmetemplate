@@ -11,13 +11,13 @@ import groovyx.acme.text.AcmeTemplateEngine
 
 
 ## The goal
-Parse big templates without double character screening with a possibility to choose a kind of expressions: JSP style or GString or both of them.
+Parse large templates without double character escaping with a possibility to choose a kind of expressions: JSP style or GString or both of them.
 
 
 
 ## Difference from standard groovy.text.TemplateEngine
-- template does not need to use screening for characters like `'$'`, `'\'`, `'%'`
-- can parse big templates
+- template does not need to use escaping for characters like `'$'`, `'\'`, `'%'`
+- can parse large templates
 - thread safe
 - can be chosen the mode of parsing: using JSP like template or GString like template or both
 
