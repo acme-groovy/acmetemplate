@@ -25,6 +25,7 @@ import groovy.lang.Writable;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.CharBuffer;
 import java.util.Map;
 
 
@@ -40,9 +41,17 @@ class AcmeTemplateWritable implements Writable {
 
     @Override
     public Writer writeTo(Writer writer) throws IOException {
+        CharBuffer template = (CharBuffer) bindMap.get("template");
         bindMap.put("out", writer);
         script.setBinding(new Binding(bindMap));
-        script.run();
+        try {
+            script.run();
+        }catch(Throwable t){
+            int line = 1;
+            int pos = template.position();
+            for(int i=0;i<pos;i++)if(template.get(i)=='\n')line++;
+            throw new RuntimeException("Error in template at line "+line+": " + t, t);
+        }
         return writer;
     }
 
@@ -51,8 +60,7 @@ class AcmeTemplateWritable implements Writable {
         try {
             return this.writeTo(new StringWriter()).toString();
         } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException(e.toString(),e);
         }
     }
 }

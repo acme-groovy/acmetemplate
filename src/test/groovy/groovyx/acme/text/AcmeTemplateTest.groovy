@@ -24,8 +24,6 @@ import junit.framework.TestCase;
 class AcmeTemplateTest extends GroovyTestCase {
 	int runCount = 50;
 
-
-
 	public void testLoadAcmeEngine(){
 		def te = new AcmeTemplateEngine();
 		for (int i=0; i<runCount; i++) {
@@ -54,14 +52,26 @@ class AcmeTemplateTest extends GroovyTestCase {
 
 
 
-
 	public void testLoadAcmeEngineFile() {
 		def te = new AcmeTemplateEngine();
 		for(int i=0; i<runCount; i++) {
-			def t = te.createTemplate(new File("C:\\Users\\madch\\work\\projects\\acmetemplate\\src\\test\\groovy\\groovyx\\acme\\text\\small_text.txt"));
+			def t = te.createTemplate(new File("./src/test/groovy/groovyx/acme/text/small_text.txt"));
 			def wr = t.make(Par1: i, Par2: 'sss', Par3: 222, Par4: 'aaa', Par5: 444, Par6: 'ccc').toString()
 		}
 	}
+
+	public void testFailure(){
+		try {
+			def te = new AcmeTemplateEngine().setMode(AcmeTemplateEngine.MODE_JSP);
+			def t = te.createTemplate('\nmyParm1 = \n<%=myParm1.XYZ()%> <%=new Date()%>   ');
+			def wr = t.make(myParm1: 111, myParm2: 'sss').toString()
+			assert wr == 'myParm1 = 111; myParm2 = ${myParm2}'
+		}catch(Throwable t){
+			assert t.getMessage().indexOf("at line 3")>-1
+		}
+	}
+
+
 
 	/*
 	public void testLoadAcmeEngineThreads(){
