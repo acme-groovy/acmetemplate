@@ -5,7 +5,7 @@ The template engine uses JSP style <% %> script and <%= %> expression syntax or 
 ## Grab it
 
 ```groovy
-@Grab(group='acme.groovy', module='acmetemplate', version='20180723', transitive=false)
+@Grab(group='acme.groovy', module='acmetemplate', version='20190218', transitive=false)
 import groovyx.acme.text.AcmeTemplateEngine
 ```
 
