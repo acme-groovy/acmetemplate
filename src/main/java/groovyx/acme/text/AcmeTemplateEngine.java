@@ -42,17 +42,17 @@ import org.codehaus.groovy.runtime.MethodClosure;
  * <br>
  * <ul>
  *     <li>template does not need to use screening for characters like '$', '\', '%'</li>
- *     <li>can parse big templates</li>
+ *     <li>can parse large templates</li>
  *     <li>thread safe</li>
  *     <li>can be chosen the mode of parsing: using JSP like template or GString like template or both</li>
  * </ul>
  */
 public class AcmeTemplateEngine extends TemplateEngine {
 
-    public final static String MODE_ALL = "&";
-    public final static String MODE_JSP = "%";
-    public final static String MODE_SH = "$";
-    String mode = MODE_ALL;
+    public final static char MODE_ALL = '&';
+    public final static char MODE_JSP = '%';
+    public final static char MODE_SH  = '$';
+    char mode = MODE_ALL;
 
     //GroovyShell groovyShell = new GroovyShell();
     ClassLoader cl = AcmeTemplateEngine.class.getClassLoader();
@@ -60,9 +60,14 @@ public class AcmeTemplateEngine extends TemplateEngine {
     /**
      * Sets mode of expressions style: JSP style or GString style or both)
      */
-    public AcmeTemplateEngine setMode(String mode) {
+    public AcmeTemplateEngine setMode(char mode) {
+        if(mode!=MODE_ALL && mode!=MODE_JSP && mode!=MODE_SH)throw new IllegalArgumentException("Unsupported mode = `"+mode+"`");
         this.mode = mode;
         return this;
+    }
+    public AcmeTemplateEngine setMode(String mode) {
+        if(mode==null || mode.length()!=1)throw new IllegalArgumentException("Unsupported mode = `"+mode+"`");
+        return setMode(mode.charAt(0));
     }
     /**
      * Sets class loader to run template
