@@ -119,12 +119,15 @@ public class AcmeTemplateEngine extends TemplateEngine {
 
 
 
+        private final int STATE_DEF = 0;
+        private final int STATE_JSP = 0;
+        private final int STATE_SH  = 6;
         private Script parse() throws IOException {
             int state = 0;//0 - `<` - 1 - `%` - 2 -'%' - 3 - `>` - 1
             boolean eqFlag = false;
             StringBuffer out = new StringBuffer((int) (template.length() * 0.75));
             char[] cchars = {
-                    '<', '%', '%', '>',
+                    '<', '%', '%', '>','\r','\n',
                     '$', '{', '}'};
 
             int index = 0;
@@ -133,15 +136,15 @@ public class AcmeTemplateEngine extends TemplateEngine {
             for (index = 0; index < template.length(); index++) {
                 char b = template.get(index);
                 switch (state) {
-                    case 0: //default
-                        if (b == cchars[0] && (mode == MODE_JSP || mode == MODE_ALL)) {
-                            state = 1;
-                        } else if (b == cchars[4] && (mode == MODE_SH || mode == MODE_ALL)) {
-                            state = 5;
+                    case STATE_DEF: //default
+                        if (b == cchars[STATE_JSP] && (mode == MODE_JSP || mode == MODE_ALL)) {
+                            state = STATE_JSP+1;
+                        } else if (b == cchars[STATE_SH] && (mode == MODE_SH || mode == MODE_ALL)) {
+                            state = STATE_SH+1;
                         }
                         // else if( b==cchars[4] ){ state=5; } //comment to disable support of ${} expressions
                         break;
-                    case 1: //got `<` from default waiting for `%`
+                    case STATE_JSP+1: //got `<` from default waiting for `%`
                         if (b == cchars[state]) {
                             state++;
                             if (index - 1 > start) {
@@ -150,10 +153,10 @@ public class AcmeTemplateEngine extends TemplateEngine {
                             }
                             start = index + 1;
                         } else {
-                            state = 0; //fall back state
+                            state = STATE_DEF; //fall back state
                         }
                         break;
-                    case 2: //got `%` after `<` : sctipt started from the next byte
+                    case STATE_JSP+2: //got `%` after `<` : sctipt started from the next byte
                         //println "index=$index state=$state b=`${(char)b}`"
                         if (b == cchars[state]) {
                             state++;
@@ -166,9 +169,9 @@ public class AcmeTemplateEngine extends TemplateEngine {
                             }
                         }
                         break;
-                    case 3: //got `%` from script waiting for `>` to go to default state
-                        if (b == cchars[state]) {
-                            state = 0;
+                    case STATE_JSP+3: //got `%` from script waiting for `>` to go to default state
+                        if (b == cchars[state]) { //got `>` after  `%` -> default state
+                            state = STATE_DEF;
                             if (index + 3 > start) {
                                 if (eqFlag) {
                                     out.append(" );");
@@ -180,10 +183,10 @@ public class AcmeTemplateEngine extends TemplateEngine {
                         } else {
                             out.append('%');
                             out.append((char) b);
-                            state = 2; //fall back state
+                            state--; // = STATE_JSP+2; //fall back state
                         }
                         break;
-                    case 5: //got '$' on previous step. waiting for '{'
+                    case STATE_SH+1: //got '$' on previous step. waiting for '{'
                         if (b == cchars[state]) {
                             state++;
                             if (index - 1 > start) {
@@ -193,12 +196,12 @@ public class AcmeTemplateEngine extends TemplateEngine {
                             out.append("\nwrite(out, ");
                             start = index + 1;
                         } else {
-                            state = 0; //fall back state
+                            state = STATE_DEF; //fall back state
                         }
                         break;
-                    case 6: //got `}` from script waiting for `>` to go to default state
+                    case STATE_SH+2: //:state `${`  waiting for `}` to go to default state
                         if (b == cchars[state]) {
-                            state = 0;
+                            state = STATE_DEF;
                             if (index + 3 > start) {
                                 out.append(" );");
                                 //out.append("\ntemplateStream.skip("+(index-start+3)+");");

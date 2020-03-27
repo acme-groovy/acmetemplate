@@ -51,6 +51,14 @@ class AcmeTemplateTest extends GroovyTestCase {
 	}
 
 
+	public void testAcmeModeJSP2(){
+		def te = new AcmeTemplateEngine().setMode(AcmeTemplateEngine.MODE_JSP);
+		def t = te.createTemplate('myParm1 = <%= myParm1%1>0?"titanic":"all good"  %>; myParm2 = ${myParm2}');
+		def wr = t.make(myParm1: 111, myParm2: 'sss').toString()
+		assert wr=='myParm1 = all good; myParm2 = ${myParm2}'
+	}
+
+
 
 	public void testLoadAcmeEngineFile() {
 		def te = new AcmeTemplateEngine();
