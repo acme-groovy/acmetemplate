@@ -1,6 +1,6 @@
 # AcmeTemplateEngine
 Processes template source files substituting variables and expressions into placeholders in a template source text to produce the desired output.
-The template engine uses JSP style <% %> script and <%= %> expression syntax or GString style expressions.
+The template engine uses JSP style `<% %>` script and `<%= %>` expression syntax or GString style `${ }` expressions.
 
 ## Grab it
 
@@ -11,8 +11,7 @@ import groovyx.acme.text.AcmeTemplateEngine
 
 
 ## The goal
-Parse large templates without double character escaping with a possibility to choose a kind of expressions: JSP style or GString or both of them.
-
+Parse large templates without double character escaping with a possibility to choose a kind of expressions: JSP style or GString or both of them. 
 
 
 ## Difference from standard groovy.text.TemplateEngine
