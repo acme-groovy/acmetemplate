@@ -33,8 +33,8 @@ Very similar to SimpleTemplateEngine but better:)
 ### Simple example of using with template in string
 ```groovy
 def te = new AcmeTemplateEngine()
-def t = te.createTemplate("myParm1 = <%=myParm1%>; myParm2 = ${myParm2}")
-def wr = t.make(myParm1: i, myParm2: 'sss').toString()
+def t = te.createTemplate('myParm1 = <%=myParm1%>; myParm2 = ${myParm2}')
+def wr = t.make(myParm1: 111, myParm2: 'sss').toString()
 assert wr=='myParm1 = 111; myParm2 = sss'
 ```
 ### Setting a mode of parsing
@@ -46,9 +46,10 @@ assert wr=='myParm1 = <%=myParm1%>; myParm2 = sss'
 ```
 ### Parsing from a file
 ```groovy
+new File('/opt/filename.txt').text='myParm1 = <%=myParm1%>; myParm2 = ${myParm2}'
 def te = new AcmeTemplateEngine()
-def t = te.createTemplate(new File("filename.txt"))
-def wr = t.make(Par1: 111, Par2: 'sss').toString()
+def t = te.createTemplate(new File("/opt/filename.txt"))
+def wr = t.make(myParm1: 111, myParm2: 'sss').toString()
 assert wr=='myParm1 = 111; myParm2 = sss'
 ```
 ### The end of line after JSP code injection
@@ -75,6 +76,5 @@ def t = te.createTemplate('''NAMES:
 <% } %>
 ''')
 def wr = t.make(names: ['John','Paul','Jones'] ).toString()
-new File('delme').setText(wr,"UTF-8")
 assert wr=='NAMES:\n 0 - John\n 1 - Paul\n 2 - Jones\n'
 ```
