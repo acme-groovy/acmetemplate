@@ -41,9 +41,9 @@ import org.codehaus.groovy.runtime.MethodClosure;
  * <br>Difference from standard groovy.text.TemplateEngine
  * <br>
  * <ul>
- *     <li>template does not need to use screening for characters like '$', '\', '%'</li>
+ *     <li>template does not need to use screening for characters like {@code '$', '\', '%'}</li>
  *     <li>can parse large templates</li>
- *     <li>thread safe</li>
+ *     <li>thread safe - the method {@code template.make(...)} could be used in parallel threads </li>
  *     <li>can be chosen the mode of parsing: using JSP like template or GString like template or both</li>
  * </ul>
  */
@@ -59,18 +59,28 @@ public class AcmeTemplateEngine extends TemplateEngine {
 
     /**
      * Sets mode of expressions style: JSP style or GString style or both)
+     * @param mode use MODE_JSP {@code '%'} for JSP like code injection and interpolation, MODE_SH {@code '$'} for groovy/shell like interpolation, or MODE_ALL {@code '&'} to support both (default)
+     * @return returns this template engine
      */
     public AcmeTemplateEngine setMode(char mode) {
         if(mode!=MODE_ALL && mode!=MODE_JSP && mode!=MODE_SH)throw new IllegalArgumentException("Unsupported mode = `"+mode+"`");
         this.mode = mode;
         return this;
     }
+    /**
+     * Sets mode of expressions style: JSP style or GString style or both). The same as other method but with strings (for groovy)
+     * @param mode use {@code "%"} for JSP like code injection and interpolation, {@code "$"} for groovy/shell like interpolation, or {@code "&"} to support both (default)
+     * @return returns this template engine
+     */
     public AcmeTemplateEngine setMode(String mode) {
         if(mode==null || mode.length()!=1)throw new IllegalArgumentException("Unsupported mode = `"+mode+"`");
         return setMode(mode.charAt(0));
     }
+
     /**
      * Sets class loader to run template
+     * @param cl class loader to be used to find classes
+     * @return returns this template engine
      */
     public AcmeTemplateEngine setClassLoader(ClassLoader cl) {
         this.cl = cl;
@@ -171,9 +181,10 @@ public class AcmeTemplateEngine extends TemplateEngine {
                         break;
                     case STATE_JSP+3: //got `%` from script waiting for `>` to go to default state
                         if (b == cchars[state]) { //got `>` after  `%` -> default state
-                            state = STATE_DEF;
-                            if (index + 3 > start) {
+                            state++;
+                            if (index + 3 > start) { //TODO: why?
                                 if (eqFlag) {
+                                    state = STATE_DEF; //skip next new line char
                                     out.append(" );");
                                 }
                                 eqFlag = false;
@@ -185,6 +196,28 @@ public class AcmeTemplateEngine extends TemplateEngine {
                             out.append((char) b);
                             state--; // = STATE_JSP+2; //fall back state
                         }
+                        break;
+                    case STATE_JSP+4: //jsp finished waiting potential `\r\n` or `\n` or `\r`
+                        if(b == '\r'){
+                            start++; //shift start to next char
+                            state++; //got `\r` expecting next `\n`
+                        }else if(b == '\n'){
+                            start++; //shift start to next char
+                            state=STATE_DEF;
+                        }else{
+                            //keep current start, current char will be printed to output
+                            state=STATE_DEF;
+                        }
+                        break;
+                    case STATE_JSP+5: //jsp finished waiting potential `\r\n` or `\n` or `\r`
+                        if(b == '\r'){ // `\r` 2nd time, so it's a next line
+                            //keep current start, current char will be printed to output
+                        }else if(b == '\n'){
+                            start++; //shift start to next char
+                        }else{
+                            //keep current start, current char will be printed to output
+                        }
+                        state=STATE_DEF;
                         break;
                     case STATE_SH+1: //got '$' on previous step. waiting for '{'
                         if (b == cchars[state]) {
@@ -218,6 +251,8 @@ public class AcmeTemplateEngine extends TemplateEngine {
                     out.append("\ntemplate.position(" + start + ");");
                     out.append("\nwrite(out, template, " + (index - start) + ");\n");
                 }
+            } else if(state == STATE_JSP+4 || state == STATE_JSP+5) {
+                //nothing to add because that's the last new line after JSP pag close
             } else {
                 throw new RuntimeException("Wrong state=" + state + " at the end of the template file. Close all expressions!");
             }
@@ -270,6 +305,7 @@ public class AcmeTemplateEngine extends TemplateEngine {
             try {
                 writable = new AcmeTemplateWritable(getScript(), bindMap);
             } catch (Throwable e) {
+                if(e instanceof RuntimeException)throw (RuntimeException)e;
                 throw new RuntimeException("Error making template: "+e, e);
             }
             return writable;

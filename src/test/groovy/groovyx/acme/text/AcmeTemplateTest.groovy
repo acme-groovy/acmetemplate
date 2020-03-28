@@ -58,7 +58,79 @@ class AcmeTemplateTest extends GroovyTestCase {
 		assert wr=='myParm1 = all good; myParm2 = ${myParm2}'
 	}
 
+	public void testAcmeModeJSP_CRCR(){
+		def te = new AcmeTemplateEngine().setMode(AcmeTemplateEngine.MODE_JSP);
+		def t = te.createTemplate('123<% out<<"456" %>\r\r789');
+		def wr = t.make(myParm1: 111, myParm2: 'sss').toString()
+		assert wr=='123456\r789'
+	}
 
+	public void testAcmeModeJSP_CRLF(){
+		def te = new AcmeTemplateEngine().setMode(AcmeTemplateEngine.MODE_JSP);
+		def t = te.createTemplate('123<% out<<"456" %>\r\n789');
+		def wr = t.make(myParm1: 111, myParm2: 'sss').toString()
+		assert wr=='123456789'
+	}
+
+	public void testAcmeModeJSP_LFLF(){
+		def te = new AcmeTemplateEngine().setMode(AcmeTemplateEngine.MODE_JSP);
+		def t = te.createTemplate('123<% out<<"456" %>\n\n789');
+		def wr = t.make(myParm1: 111, myParm2: 'sss').toString()
+		assert wr=='123456\n789'
+	}
+
+	public void testAcmeModeJSP_CRX(){
+		def te = new AcmeTemplateEngine().setMode(AcmeTemplateEngine.MODE_JSP);
+		def t = te.createTemplate('123<% out<<"456" %>\r789');
+		def wr = t.make(myParm1: 111, myParm2: 'sss').toString()
+		assert wr=='123456789'
+	}
+
+	public void testAcmeModeJSP_LFX(){
+		def te = new AcmeTemplateEngine().setMode(AcmeTemplateEngine.MODE_JSP);
+		def t = te.createTemplate('123<% out<<"456" %>\n789');
+		def wr = t.make(myParm1: 111, myParm2: 'sss').toString()
+		assert wr=='123456789'
+	}
+
+	public void testAcmeModeJSP_LFatEOF(){
+		def te = new AcmeTemplateEngine().setMode(AcmeTemplateEngine.MODE_JSP);
+		def t = te.createTemplate('123<% out<<"456" %>\n');
+		def wr = t.make(myParm1: 111, myParm2: 'sss').toString()
+		assert wr=='123456'
+	}
+
+	public void testAcmeModeJSP_CRatEOF(){
+		def te = new AcmeTemplateEngine().setMode(AcmeTemplateEngine.MODE_JSP);
+		def t = te.createTemplate('123<% out<<"456" %>\r');
+		def wr = t.make(myParm1: 111, myParm2: 'sss').toString()
+		assert wr=='123456'
+	}
+
+	public void testAcmeModeJSP_LF_1(){
+		def te = new AcmeTemplateEngine().setMode(AcmeTemplateEngine.MODE_JSP);
+		def t = te.createTemplate('<% out.print("hello") %>\n <%= name %>')
+		def wr = t.make(name:'world').toString()
+		assert wr=='hello world'
+	}
+
+	public void testAcmeModeJSP_LF_2(){
+		def te = new AcmeTemplateEngine().setMode(AcmeTemplateEngine.MODE_JSP);
+		def t = te.createTemplate('<%= "hello" %>\n <%= name %>')
+		def wr = t.make(name:'world').toString()
+		assert wr=='hello\n world'
+	}
+
+	public void testAcmeModeJSP_LF_3(){
+		def te = new AcmeTemplateEngine().setMode(AcmeTemplateEngine.MODE_JSP);
+		def t = te.createTemplate('''NAMES:
+<% names.eachWithIndex{n,i-> %>
+<%= i %> - <%= n %>
+<% } %>
+''')
+		def wr = t.make(names: ['John','Paul','Jones'] ).toString()
+		assert wr=='NAMES:\n0 - John\n1 - Paul\n2 - Jones\n'
+	}
 
 	public void testLoadAcmeEngineFile() {
 		def te = new AcmeTemplateEngine();
