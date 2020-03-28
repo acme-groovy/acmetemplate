@@ -67,7 +67,7 @@ def t = te.createTemplate('<%= "hello" %>\n <%= name %>')
 def wr = t.make(name:'world').toString()
 assert wr=='hello\n world'
 ```
-the goal to keep templates more structured when code injection used
+the goal is to keep templates more structured when code injection used
 ```groovy
 def te = new AcmeTemplateEngine().setMode(AcmeTemplateEngine.MODE_JSP);
 def t = te.createTemplate('''NAMES:
