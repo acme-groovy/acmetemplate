@@ -46,6 +46,7 @@ import org.codehaus.groovy.runtime.MethodClosure;
  *     <li>thread safe - the method {@code template.make(...)} could be used in parallel threads </li>
  *     <li>can be chosen the mode of parsing: using JSP like template or GString like template or both</li>
  * </ul>
+ * Check usage examples on <a href="https://github.com/acme-groovy/acmetemplate" target="_top">github</a>
  */
 public class AcmeTemplateEngine extends TemplateEngine {
 
